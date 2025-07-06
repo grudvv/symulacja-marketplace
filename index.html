@@ -117,7 +117,7 @@
             <h4>Założenia bazowe (na podstawie obecnych danych):</h4>
             <p>• Średnia obsługa na klienta: ~1,500 zł/miesiąc</p>
             <p>• Średnie wdrożenie: ~2,500 zł (jednorazowo)</p>
-            <p>• Focus na odejście od Allegro → przejście na Amazon, eBay, nowe marketplace</p>
+            <p>• Focus na zagraniczne marketplace: Amazon, eBay, nowe platformy</p>
         </div>
 
         <div class="controls">
@@ -153,10 +153,7 @@
                 <input type="number" id="avgImplementation" value="2500">
             </div>
             
-            <div class="control-group">
-                <label>% klientów z Allegro migrujących:</label>
-                <input type="number" id="migrationRate" value="60">
-            </div>
+
             
             <button onclick="calculateRevenue()">Przelicz symulację</button>
             <button onclick="resetDefaults()">Reset do domyślnych</button>
@@ -190,14 +187,13 @@
             const growthRate = parseFloat(document.getElementById('growthRate').value) / 100;
             const avgService = parseInt(document.getElementById('avgService').value);
             const avgImplementation = parseInt(document.getElementById('avgImplementation').value);
-            const migrationRate = parseFloat(document.getElementById('migrationRate').value) / 100;
+
 
             // LIPIEC
             const julyServiceExisting = existingClients * avgService * (1 + growthRate);
             const julyServiceNew = newClientsJuly * avgService * 0.5; // połowa miesiąca
             const julyImplementations = newClientsJuly * avgImplementation;
-            const julyMigrationRevenue = existingClients * migrationRate * (avgImplementation * 0.7); // mniejsze wdrożenia migracji
-            const julyTotal = julyServiceExisting + julyServiceNew + julyImplementations + julyMigrationRevenue;
+            const julyTotal = julyServiceExisting + julyServiceNew + julyImplementations;
 
             // SIERPIEŃ
             const augustServiceExisting = existingClients * avgService * (1 + growthRate * 1.5);
@@ -220,10 +216,6 @@
                 <div class="revenue-item">
                     <span>Wdrożenia nowych klientów:</span>
                     <span>${julyImplementations.toLocaleString('pl-PL')} zł</span>
-                </div>
-                <div class="revenue-item highlight">
-                    <span>Migracje z Allegro:</span>
-                    <span>${julyMigrationRevenue.toLocaleString('pl-PL')} zł</span>
                 </div>
                 <div class="revenue-item total">
                     <span>TOTAL LIPIEC:</span>
@@ -266,7 +258,6 @@
             document.getElementById('growthRate').value = 15;
             document.getElementById('avgService').value = 1500;
             document.getElementById('avgImplementation').value = 2500;
-            document.getElementById('migrationRate').value = 60;
             calculateRevenue();
         }
 
@@ -275,7 +266,6 @@
             document.getElementById('newClientsJuly').value = 25;
             document.getElementById('newClientsAugust').value = 35;
             document.getElementById('growthRate').value = 25;
-            document.getElementById('migrationRate').value = 80;
             calculateRevenue();
         }
 
@@ -284,7 +274,6 @@
             document.getElementById('newClientsJuly').value = 10;
             document.getElementById('newClientsAugust').value = 12;
             document.getElementById('growthRate').value = 10;
-            document.getElementById('migrationRate').value = 40;
             calculateRevenue();
         }
 
@@ -294,7 +283,6 @@
             document.getElementById('newClientsAugust').value = 50;
             document.getElementById('growthRate').value = 35;
             document.getElementById('avgService').value = 2000;
-            document.getElementById('migrationRate').value = 90;
             calculateRevenue();
         }
 
