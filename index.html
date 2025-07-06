@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Symulacja przychodów - Lipiec/Sierpień 2025</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .controls {
+            background: #e8f4f8;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .control-group {
+            display: inline-block;
+            margin: 10px 20px 10px 0;
+        }
+        .control-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        .control-group input {
+            width: 100px;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .results {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .month-card {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #007acc;
+        }
+        .month-card h3 {
+            margin-top: 0;
+            color: #007acc;
+        }
+        .revenue-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            padding: 5px;
+            background: white;
+            border-radius: 4px;
+        }
+        .revenue-item.highlight {
+            background: #e8f5e8;
+            font-weight: bold;
+        }
+        .total {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #007acc;
+            border-top: 2px solid #007acc;
+            padding-top: 10px;
+            margin-top: 10px;
+        }
+        .assumptions {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .assumptions h4 {
+            margin-top: 0;
+            color: #856404;
+        }
+        button {
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #005a9e;
+        }
+        @media (max-width: 768px) {
+            .results {
+                grid-template-columns: 1fr;
+            }
+            .control-group {
+                display: block;
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Symulacja przychodów - Lipiec/Sierpień 2025</h1>
+        
+        <div class="assumptions">
+            <h4>Założenia bazowe (na podstawie obecnych danych):</h4>
+            <p>• Średnia obsługa na klienta: ~1,500 zł/miesiąc</p>
+            <p>• Średnie wdrożenie: ~2,500 zł (jednorazowo)</p>
+            <p>• Focus na odejście od Allegro → przejście na Amazon, eBay, nowe marketplace</p>
+        </div>
+
+        <div class="controls">
+            <h3>Parametry symulacji</h3>
+            
+            <div class="control-group">
+                <label>Liczba obecnych klientów:</label>
+                <input type="number" id="existingClients" value="50">
+            </div>
+            
+            <div class="control-group">
+                <label>Nowi klienci - lipiec:</label>
+                <input type="number" id="newClientsJuly" value="15">
+            </div>
+            
+            <div class="control-group">
+                <label>Nowi klienci - sierpień:</label>
+                <input type="number" id="newClientsAugust" value="20">
+            </div>
+            
+            <div class="control-group">
+                <label>% wzrost obsługi istniejących:</label>
+                <input type="number" id="growthRate" value="15">
+            </div>
+            
+            <div class="control-group">
+                <label>Średnia obsługa/klient:</label>
+                <input type="number" id="avgService" value="1500">
+            </div>
+            
+            <div class="control-group">
+                <label>Średnie wdrożenie:</label>
+                <input type="number" id="avgImplementation" value="2500">
+            </div>
+            
+            <div class="control-group">
+                <label>% klientów z Allegro migrujących:</label>
+                <input type="number" id="migrationRate" value="60">
+            </div>
+            
+            <button onclick="calculateRevenue()">Przelicz symulację</button>
+            <button onclick="resetDefaults()">Reset do domyślnych</button>
+        </div>
+
+        <div class="results">
+            <div class="month-card">
+                <h3>LIPIEC 2025</h3>
+                <div id="julyResults"></div>
+            </div>
+            
+            <div class="month-card">
+                <h3>SIERPIEŃ 2025</h3>
+                <div id="augustResults"></div>
+            </div>
+        </div>
+
+        <div style="margin-top: 30px; padding: 20px; background: #f0f8ff; border-radius: 8px;">
+            <h4>Dodatkowe scenariusze:</h4>
+            <button onclick="optimisticScenario()">Scenariusz optymistyczny</button>
+            <button onclick="conservativeScenario()">Scenariusz konserwatywny</button>
+            <button onclick="aggressiveScenario()">Scenariusz agresywny</button>
+        </div>
+    </div>
+
+    <script>
+        function calculateRevenue() {
+            const existingClients = parseInt(document.getElementById('existingClients').value);
+            const newClientsJuly = parseInt(document.getElementById('newClientsJuly').value);
+            const newClientsAugust = parseInt(document.getElementById('newClientsAugust').value);
+            const growthRate = parseFloat(document.getElementById('growthRate').value) / 100;
+            const avgService = parseInt(document.getElementById('avgService').value);
+            const avgImplementation = parseInt(document.getElementById('avgImplementation').value);
+            const migrationRate = parseFloat(document.getElementById('migrationRate').value) / 100;
+
+            // LIPIEC
+            const julyServiceExisting = existingClients * avgService * (1 + growthRate);
+            const julyServiceNew = newClientsJuly * avgService * 0.5; // połowa miesiąca
+            const julyImplementations = newClientsJuly * avgImplementation;
+            const julyMigrationRevenue = existingClients * migrationRate * (avgImplementation * 0.7); // mniejsze wdrożenia migracji
+            const julyTotal = julyServiceExisting + julyServiceNew + julyImplementations + julyMigrationRevenue;
+
+            // SIERPIEŃ
+            const augustServiceExisting = existingClients * avgService * (1 + growthRate * 1.5);
+            const augustServiceNewFromJuly = newClientsJuly * avgService;
+            const augustServiceNewFromAugust = newClientsAugust * avgService * 0.5;
+            const augustImplementations = newClientsAugust * avgImplementation;
+            const augustAdditionalPlatforms = (existingClients + newClientsJuly) * 0.3 * 1000; // 30% dodaje nowe platformy
+            const augustTotal = augustServiceExisting + augustServiceNewFromJuly + augustServiceNewFromAugust + augustImplementations + augustAdditionalPlatforms;
+
+            // Wyświetl wyniki
+            document.getElementById('julyResults').innerHTML = `
+                <div class="revenue-item">
+                    <span>Obsługa istniejących klientów:</span>
+                    <span>${julyServiceExisting.toLocaleString('pl-PL')} zł</span>
+                </div>
+                <div class="revenue-item">
+                    <span>Obsługa nowych klientów:</span>
+                    <span>${julyServiceNew.toLocaleString('pl-PL')} zł</span>
+                </div>
+                <div class="revenue-item">
+                    <span>Wdrożenia nowych klientów:</span>
+                    <span>${julyImplementations.toLocaleString('pl-PL')} zł</span>
+                </div>
+                <div class="revenue-item highlight">
+                    <span>Migracje z Allegro:</span>
+                    <span>${julyMigrationRevenue.toLocaleString('pl-PL')} zł</span>
+                </div>
+                <div class="revenue-item total">
+                    <span>TOTAL LIPIEC:</span>
+                    <span>${julyTotal.toLocaleString('pl-PL')} zł</span>
+                </div>
+            `;
+
+            document.getElementById('augustResults').innerHTML = `
+                <div class="revenue-item">
+                    <span>Obsługa istniejących klientów:</span>
+                    <span>${augustServiceExisting.toLocaleString('pl-PL')} zł</span>
+                </div>
+                <div class="revenue-item">
+                    <span>Obsługa klientów z lipca:</span>
+                    <span>${augustServiceNewFromJuly.toLocaleString('pl-PL')} zł</span>
+                </div>
+                <div class="revenue-item">
+                    <span>Obsługa nowych (sierpień):</span>
+                    <span>${augustServiceNewFromAugust.toLocaleString('pl-PL')} zł</span>
+                </div>
+                <div class="revenue-item">
+                    <span>Wdrożenia nowych klientów:</span>
+                    <span>${augustImplementations.toLocaleString('pl-PL')} zł</span>
+                </div>
+                <div class="revenue-item highlight">
+                    <span>Dodatkowe platformy:</span>
+                    <span>${augustAdditionalPlatforms.toLocaleString('pl-PL')} zł</span>
+                </div>
+                <div class="revenue-item total">
+                    <span>TOTAL SIERPIEŃ:</span>
+                    <span>${augustTotal.toLocaleString('pl-PL')} zł</span>
+                </div>
+            `;
+        }
+
+        function resetDefaults() {
+            document.getElementById('existingClients').value = 50;
+            document.getElementById('newClientsJuly').value = 15;
+            document.getElementById('newClientsAugust').value = 20;
+            document.getElementById('growthRate').value = 15;
+            document.getElementById('avgService').value = 1500;
+            document.getElementById('avgImplementation').value = 2500;
+            document.getElementById('migrationRate').value = 60;
+            calculateRevenue();
+        }
+
+        function optimisticScenario() {
+            document.getElementById('existingClients').value = 80;
+            document.getElementById('newClientsJuly').value = 25;
+            document.getElementById('newClientsAugust').value = 35;
+            document.getElementById('growthRate').value = 25;
+            document.getElementById('migrationRate').value = 80;
+            calculateRevenue();
+        }
+
+        function conservativeScenario() {
+            document.getElementById('existingClients').value = 40;
+            document.getElementById('newClientsJuly').value = 10;
+            document.getElementById('newClientsAugust').value = 12;
+            document.getElementById('growthRate').value = 10;
+            document.getElementById('migrationRate').value = 40;
+            calculateRevenue();
+        }
+
+        function aggressiveScenario() {
+            document.getElementById('existingClients').value = 100;
+            document.getElementById('newClientsJuly').value = 40;
+            document.getElementById('newClientsAugust').value = 50;
+            document.getElementById('growthRate').value = 35;
+            document.getElementById('avgService').value = 2000;
+            document.getElementById('migrationRate').value = 90;
+            calculateRevenue();
+        }
+
+        // Inicjalne wyliczenie
+        calculateRevenue();
+    </script>
+</body>
+</html>
